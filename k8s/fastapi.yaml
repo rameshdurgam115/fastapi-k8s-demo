@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+      - name: fastapi
+        image: fastapi-k8s-demo:latest
+        imagePullPolicy: IfNotPresent    # ← add this line
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:postgres@postgres:5432/postgres"
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi
+  namespace: demo
+spec:
+  type: ClusterIP
+  selector:
+    app: fastapi
+  ports:
+  - port: 8000
+    targetPort: 8000

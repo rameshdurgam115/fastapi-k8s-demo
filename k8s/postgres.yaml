@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: demo                  # deploy into our demo namespace
+spec:
+  selector:
+    matchLabels:
+      app: postgres                # must match template.labels
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15         # official Postgres image
+        env:
+        - name: POSTGRES_USER     # required by the image
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "postgres"
+        ports:
+        - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: demo
+spec:
+  type: ClusterIP                 # internal-only service
+  selector:
+    app: postgres                 # matches our Deployment pods
+  ports:
+  - port: 5432
+    targetPort: 5432
